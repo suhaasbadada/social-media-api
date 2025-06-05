@@ -2,6 +2,7 @@ import time
 from typing import Optional, List
 from fastapi import Body, FastAPI, HTTPException, Response, status, Depends
 from pydantic import BaseModel
+from passlib.context import CryptContext
 from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -11,6 +12,7 @@ from .database import SessionLocal, engine, get_db
 from sqlalchemy.orm import Session
 from . import models, schemas
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 models.Base.metadata.create_all(bind=engine)
 
 load_dotenv()
@@ -92,6 +94,11 @@ def update_post(id: int, post: schemas.PostCreate, db:Session = Depends(get_db))
 
 @app.post("/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
 def create_user(user: schemas.UserCreate,db:Session = Depends(get_db)):
+    if db.query(models.User).filter(models.User.email == user.email).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"message": "Email already registered"})
+    
+    hashed_password=pwd_context.hash(user.password)
+    user.password = hashed_password
     new_user=models.User(**user.model_dump())
     db.add(new_user)
     db.commit()
