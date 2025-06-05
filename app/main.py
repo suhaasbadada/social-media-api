@@ -44,18 +44,9 @@ while True:
         print("Error:",e)
         time.sleep(2)
 
-my_posts=[{"title": "Title of post 1", "content": "Content of post 1", "published": True, "rating": 5, "id": 1},
-            {"title": "Title of post 2", "content": "Content of post 2", "published": False, "rating": 3, "id": 2}]
-
 @app.get("/")
 async def root():
     return {"message": "Hello, World!"}
-
-@app.get("/sqlalchemy")
-def test_posts(db:Session = Depends(get_db)):
-    posts=db.query(models.Post).all()
-    return {"data":posts}
-
 
 @app.get("/posts")
 def get_posts(db:Session = Depends(get_db)):
@@ -71,31 +62,12 @@ def create_posts(post: Post, db:Session = Depends(get_db)):
 
     return {"data": new_post}
 
-def find_post(id):
-    for p in my_posts:
-        if p['id'] == id:
-            return p
-    return None
-
-@app.get("/posts/latest")
-def get_latest_post():
-    if not my_posts:
-        return {"error": "No posts available"}
-    latest_post = my_posts[-1]
-    return {"post_detail": latest_post}
-
 @app.get("/posts/{id}")
 def get_post(id: int, db:Session = Depends(get_db)):
     post=db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "Post not found"})
     return {"post_detail": post}
-
-def find_index_post(id):
-    for i, p in enumerate(my_posts):
-        if p['id'] == id:
-            return i
-    return None
 
 @app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db:Session = Depends(get_db)):
