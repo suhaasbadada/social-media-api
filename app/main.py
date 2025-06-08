@@ -23,27 +23,10 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 app = FastAPI()
 
-while True:
-    try:
-        conn = psycopg2.connect(
-            host=DB_HOST,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            cursor_factory=RealDictCursor
-        )
-        cursor=conn.cursor()
-        print("Database connection successful")
-        break
-    except Exception as e:
-        print("Connecting to database failed")
-        print("Error:",e)
-        time.sleep(2)
-
 app.include_router(post.router)
 app.include_router(user.router)
 app.include_router(auth.router)
+
 @app.get("/")
 async def root():
     return {"message": "Hello, World!"}
-
