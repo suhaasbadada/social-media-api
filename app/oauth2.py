@@ -1,30 +1,24 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
-from dotenv import load_dotenv
-import os
 from datetime import datetime, timedelta, timezone
 from . import schemas, database, models
 from sqlalchemy.orm import Session
-
+from .config import settings
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-load_dotenv()
 
-SECRET_KEY=os.getenv("JOSE_SECRET_KEY")
-ALGORITHM=os.getenv("JOSE_ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 def create_access_token(data: dict):
     to_encode=data.copy()
-    expire= datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire= datetime.now(timezone.utc) + timedelta(minutes=int(settings.access_token_expire_minutes))
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.jose_secret_key, algorithm=settings.jose_algorithm)
 
     return encoded_jwt
 
 def verify_access_token(token: str, credentials_exception):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.jose_secret_key, algorithms=[settings.jose_algorithm])
         id: str = payload.get("user_id")
 
         if not id:

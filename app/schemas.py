@@ -16,7 +16,7 @@ class UserOut(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
     
 class Post(PostBase):
     id: int
@@ -25,7 +25,7 @@ class Post(PostBase):
     owner: UserOut
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 class UserCreate(BaseModel):
     email: EmailStr
     password: str

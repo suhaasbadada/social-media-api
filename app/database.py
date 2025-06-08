@@ -2,20 +2,12 @@ import time
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
-import os
-
-load_dotenv()
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
+from .config import settings
 
 SQLALCHEMY_DATABASE_URL = (
-    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    f"postgresql://{settings.db_user}:{settings.db_password}@{settings.db_host}:{settings.db_port}/{settings.db_name}"
 )
 
 engine=create_engine(SQLALCHEMY_DATABASE_URL)
@@ -33,10 +25,10 @@ def get_db():
 while True:
     try:
         conn = psycopg2.connect(
-            host=DB_HOST,
-            database=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
+            host=settings.db_host,
+            database=settings.db_name,
+            user=settings.db_user,
+            password=settings.db_password,
             cursor_factory=RealDictCursor
         )
         cursor=conn.cursor()
